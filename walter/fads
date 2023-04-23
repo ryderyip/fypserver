@@ -1,0 +1,73 @@
+*&---------------------------------------------------------------------*
+*& Report  Z_YIP_KAU_HEI_DP                                            *
+*&                                                                     *
+*&---------------------------------------------------------------------*
+*&                                                                     *
+*&                                                                     *
+*&---------------------------------------------------------------------*
+
+REPORT  Z_YIP_KAU_HEI_DP MESSAGE-ID z_msg_yip_kau_he.
+
+tables zasg_yip_kau_hei.
+selection-screen begin of block options with frame title op1.
+parameters r1 radiobutton group flag.
+parameters r2 radiobutton group flag default 'X'.
+parameters currency type zasg_yip_kau_hei-currency default 'USD'.
+select-options earning for zasg_yip_kau_hei-hkearning default
+'1.00' to
+'9999.90'.
+select-options carrid for zasg_yip_kau_hei-carrid default 'AA' to
+'UA'.
+select-options p_type for zasg_yip_kau_hei-planetype default
+  '747-400'.
+selection-screen end of block options.
+types: begin of structure,
+    planetype type zasg_yip_kau_hei-planetype,
+    fltime type zasg_yip_kau_hei-fltime,
+    carrname type zasg_yip_kau_hei-carrname,
+    connid type zasg_yip_kau_hei-connid,
+    customid type zasg_yip_kau_hei-customid,
+    hkearning type zasg_yip_kau_hei-hkearning,
+end of structure.
+data flag type zasg_yip_kau_hei-h_flag.
+data itab type table of structure.
+data wa type structure.
+if r1 = 'X'.
+  flag = 'X'.
+  write: / 'report on zasg_yip_kau_hei for h_flag set'.
+else.
+  flag = ''.
+  write: / 'report on zasg_yip_kau_hei for h_flag not set'.
+endif.
+select
+planetype fltime carrname connid customid hkearning
+into table itab
+from zasg_yip_kau_hei
+where zasg_yip_kau_hei~h_flag = flag
+and zasg_yip_kau_hei~currency = currency
+and zasg_yip_kau_hei~hkearning in earning
+and zasg_yip_kau_hei~carrid in carrid
+and zasg_yip_kau_hei~planetype in p_type.
+if sy-subrc = 4.
+  message i001 with 'zasg_yip_kau_hei'.
+elseif sy-subrc <> 0.
+  message i000.
+else.
+  sort itab by connid ascending customid ascending hkearning
+  descending
+  fltime ascending .
+  loop at itab into wa.
+    uline.
+    write: / 'plane type:', 14(10) wa-planetype.
+    write: / 'flight time:', 16(10) wa-fltime.
+    write: / 'airline:', 10(20) wa-carrname.
+    write: / 'flight no.:', 13(8) wa-connid.
+    write: / 'customer number:', 16(8) wa-customid no-zero.
+    write: / 'earning in hk$:', 22(15) wa-hkearning.
+  endloop.
+endif.
+uline.
+write 'end of report'.
+
+initialization.
+  op1 = 'select option'.

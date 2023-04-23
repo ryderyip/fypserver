@@ -11,6 +11,7 @@ class ContentBlockCommonInfo(models.Model):
     class BlockType(models.TextChoices):
         TEXT = 'txt', _('Text')
         IMAGE = 'img', _('Image')
+        LATEX = 'ltx', _('Latex')
 
     content_container = models.ForeignKey(ContentBlockContainer, on_delete=models.RESTRICT,
                                           related_name="blocks")
@@ -21,6 +22,10 @@ class ContentBlockCommonInfo(models.Model):
         unique_together = ('content_container', 'ordering')
 
 
+class LatexBlock(models.Model):
+    info = models.OneToOneField(ContentBlockCommonInfo, on_delete=models.CASCADE)
+    latex = models.TextField()
+
 class TextBlock(models.Model):
     info = models.OneToOneField(ContentBlockCommonInfo, on_delete=models.CASCADE)
     text = models.TextField()
@@ -28,16 +33,17 @@ class TextBlock(models.Model):
 
 class ImageBlock(models.Model):
     info = models.OneToOneField(ContentBlockCommonInfo, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='QALib')
+    image_name = models.TextField()
 
 
 class QACommonInfo(models.Model):
-    upvotes = models.ManyToManyField(UserCommonInfo, blank=True, related_name='upvotes', default=0)
-    downvotes = models.ManyToManyField(UserCommonInfo, blank=True, related_name='downvotes', default=0)
+    upvotes = models.ManyToManyField(UserCommonInfo, blank=True, related_name='upvoters_info', default=0)
+    downvotes = models.ManyToManyField(UserCommonInfo, blank=True, related_name='downvoters_info', default=0)
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
+
 
 
 class QALibQuestion(models.Model):
@@ -45,7 +51,7 @@ class QALibQuestion(models.Model):
     question = models.CharField(max_length=255)
     question_details_block = models.OneToOneField(ContentBlockContainer, on_delete=models.RESTRICT)
     asked_on = models.DateTimeField(auto_now_add=True)
-    asked_by = models.OneToOneField(Student, on_delete=models.RESTRICT)
+    asked_by = models.ForeignKey(Student, on_delete=models.RESTRICT)
     resolved = models.BooleanField(default=False)
     visible = models.BooleanField(default=True)
     tags = models.ManyToManyField(Tag, blank=True)

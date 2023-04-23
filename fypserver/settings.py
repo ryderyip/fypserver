@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'user',
     'qalib',
+    'learning_resources',
     # 'settings',
 ]
 

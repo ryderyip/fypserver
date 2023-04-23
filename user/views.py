@@ -11,10 +11,11 @@ from user.models import Student, Teacher, UserCommonInfo
 
 
 @csrf_exempt
-def login(request):
-    email = request.POST['email']
+def login_as_nonadmin(request):
+    email_username = request.POST['email_username']
     password = request.POST['password']
-    info = UserCommonInfo.objects.filter(email__exact=email)
+
+    info = UserCommonInfo.objects.filter(Q(email=email_username) | Q(username=email_username))
 
     if not info.exists() or info.first().password != password:
         return HttpResponse(status=401)
@@ -184,3 +185,23 @@ def remove_admin(request):
     admin.delete()
     admin.info.delete()
     return HttpResponse(status=200)
+
+
+@csrf_exempt
+def login_as_admin(request):
+    email_username = request.POST['email_username']
+    password = request.POST['password']
+    info = UserCommonInfo.objects.filter(Q(email=email_username) | Q(username=email_username))
+    info = info.filter(password__exact=password)
+    if not info.exists():
+        return HttpResponse(status=401)
+
+    info = info.first()
+    query = Admin.objects.filter(info=info)
+
+    if not query.exists():
+        return HttpResponse(content='commoninfo exists but user not exist', status=500)
+
+    serializer = AdminSerializer(query.get())
+
+    return JsonResponse(data=serializer.data, status=200)

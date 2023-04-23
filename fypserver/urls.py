@@ -23,4 +23,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('user/', include('user.urls')),
     path('qalib/', include('qalib.urls')),
+    path('learning/', include('learning_resources.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

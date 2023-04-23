@@ -56,12 +56,17 @@ class TextBlockSerializer(serializers.ModelSerializer):
         depth = 1
 
 
-class ImageBlockSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField(use_url=True)
+class LatexBlockSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LatexBlock
+        fields = '__all__'
+        depth = 1
 
+
+class ImageBlockSerializer(serializers.ModelSerializer):
     class Meta:
         model = ImageBlock
-        fields = ['info', 'image']
+        fields = ['info', 'image_name']
         depth = 1
 
 
@@ -106,3 +111,8 @@ class QALibAnswerSerializer(serializers.ModelSerializer):
         ]
         # fix this and check using postman
         depth = 2
+
+
+class TagSerializer:
+    def to_dict(self, tags: list[Tag]):
+        return [{'id': tag.id, 'name': tag.name} for tag in tags]
